@@ -46,7 +46,9 @@ def import_variables(variables_str: str) -> Dict[str, Any]:
 
 def extract_python_code(code: str) -> str:
     """
-    Extract the python code block(s) from a string.
+    Extract the python code block(s) from a multi-line string.
+    Python code blocks are separated by ```python and ```, in 
+    the markdown format.
 
     Args:
         code: A string containing python code blocks.

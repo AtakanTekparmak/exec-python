@@ -80,7 +80,7 @@ class TestExecutePythonCode(unittest.TestCase):
             safe=True
         )
         expected_function_results = {
-            "get_coordinates": [(10, 20), (10, 20)]
+            "get_coordinates": ["coords_1", "coords_2"]
         }
         expected_variables = {
             "coords_1": (10, 20),

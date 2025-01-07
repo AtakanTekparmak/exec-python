@@ -2,6 +2,7 @@ from typing import List, Callable, Dict, Any
 import ast
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 import builtins
+import json
 
 from pydantic import BaseModel
 
@@ -26,6 +27,25 @@ class FunctionResults(BaseModel):
     function_results: Dict[str, Any]
     variables: Dict[str, Any]
     errors: List[str]
+
+    def __str__(self):
+        class CompactListEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, list):
+                    return [self.default(item) for item in obj]
+                return super().default(obj)
+            
+            def encode(self, obj):
+                # Keep list elements and brackets on same line while preserving other indentation
+                encoded = super().encode(obj)
+                # Remove extra spaces before list elements
+                encoded = encoded.replace('\n      ', '')
+                # Remove newlines between list elements and brackets
+                encoded = encoded.replace('[\n    ', '[').replace('\n  ]', ']')
+                encoded = encoded.replace('\n    ]', ']')
+                return encoded
+
+        return json.dumps(self.model_dump(), cls=CompactListEncoder, indent=2)
 
 def execute_python_code(
     code: str,
@@ -92,13 +112,9 @@ def execute_python_code(
                 function_to_variable.setdefault(func_name, []).append(var_name)
 
     # Wrap the provided functions to capture their return values
-    call_results = {}
-
     def make_wrapper(func_name, func):
         def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            call_results.setdefault(func_name, []).append(result)
-            return result
+            return func(*args, **kwargs)
         return wrapper
 
     for func in functions:
@@ -127,9 +143,7 @@ def execute_python_code(
     }
 
     # Create function results mapping
-    function_results = {}
-    for func_name, var_names in function_to_variable.items():
-        function_results[func_name] = [call_results.get(func_name, [None])[i] for i in range(len(var_names))]
+    function_results = function_to_variable
 
     return FunctionResults(
         function_results=function_results,
