@@ -1,5 +1,5 @@
 import unittest
-from src.exec_python import import_functions, import_variables, execute_python_code
+from src.exec_python import import_functions, import_variables, execute_python_code, extract_python_code
 
 # Define static test variables
 IMPORT_FUNCS_STR = """
@@ -45,6 +45,24 @@ CUSTOM_EXCLUDED_BUILTINS = ["print"]
 CODE_WITH_CUSTOM_EXCLUDED_BUILTINS = """
 print("This should be blocked")
 x = len([1, 2, 3])  
+"""
+
+STRING_WITH_SINGLE_CODE_BLOCK = """
+```python
+x = [1, 2, 3]
+```
+"""
+
+STRING_WITH_MULTIPLE_CODE_BLOCKS = """
+some llm output
+```python
+x = [1, 2, 3]
+```
+some more llm output
+```python
+y = [4, 5, 6]
+```
+even more llm output
 """
 
 # Define test class
@@ -125,6 +143,13 @@ class TestExecutePythonCode(unittest.TestCase):
             safe=True
         )
         self.assertIn("NotAllowedError: Usage of dangerous builtin 'print' is not allowed", result.errors)
+
+class TestExtractPythonCode(unittest.TestCase):
+    def test_extract_single_code_block(self):
+        self.assertEqual(extract_python_code(STRING_WITH_SINGLE_CODE_BLOCK), "x = [1, 2, 3]\n")
+    
+    def test_extract_multiple_code_blocks(self):
+        self.assertEqual(extract_python_code(STRING_WITH_MULTIPLE_CODE_BLOCKS), "x = [1, 2, 3]\ny = [4, 5, 6]\n")
     
 if __name__ == "__main__":
     unittest.main()
