@@ -25,12 +25,13 @@ uv run test_engine.py
 ### Quick Start 
 
 ```python
-from exec_python import execute_python_code, import_functions
+from exec_python import execute_python_code
 
-functions = """
-def pair_sum(x: List[int], y: List[int]) -> List[int]:
-    return x + y
-"""
+def pair_sum(x: list[int], y: list[int]) -> list[int]:
+    assert isinstance(x, list)
+    assert isinstance(y, list)
+    assert len(x) == len(y)
+    return [x[i] + y[i] for i in range(len(x))]
 
 code = """
 x = [1, 2]
@@ -41,7 +42,7 @@ k = pair_sum(z, z)
 
 results = execute_python_code(
     code = code,
-    functions=import_functions(functions),
+    functions=[pair_sum]
 )
 print(results)
 ```
@@ -55,8 +56,8 @@ Running the above code will output:
   "variables": {
     "x": [1,2],
     "y": [2,3],
-    "z": [1,2,2,3],
-    "k": [1,2,2,3,1,2,2,3]
+    "z": [3,5],
+    "k": [6,10]
   },
   "errors": []
 }
