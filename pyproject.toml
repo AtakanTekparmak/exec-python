@@ -1,0 +1,16 @@
+[project]
+name = "exec-python"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "AtakanTekparmak", email = "atakantekerparmak@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic>=2.10.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
