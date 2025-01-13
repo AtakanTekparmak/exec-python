@@ -124,7 +124,6 @@ def execute_python_code(
                         else:
                             full_var_name = var_name
                         function_to_variable.setdefault(func_name, []).append(full_var_name)
-
             # Handle dictionary and list comprehensions
             elif isinstance(node.value, (ast.DictComp, ast.ListComp)):
                 for subnode in ast.walk(node.value):
@@ -132,6 +131,13 @@ def execute_python_code(
                         func_name = subnode.func.id
                         var_name = node.targets[0].id
                         function_to_variable.setdefault(func_name, []).append(var_name)
+        # Handle function definitions
+        elif isinstance(node, ast.FunctionDef):
+            for subnode in ast.walk(node):
+                if isinstance(subnode, ast.Call) and isinstance(subnode.func, ast.Name):
+                    func_name = subnode.func.id
+                    var_name = f"{node.name}:internal_function"
+                    function_to_variable.setdefault(func_name, []).append(var_name)
 
     # Wrap the provided functions to capture their return values
     def make_wrapper(func_name, func):
