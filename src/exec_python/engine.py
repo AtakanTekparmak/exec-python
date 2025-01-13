@@ -106,10 +106,18 @@ def execute_python_code(
     tree = ast.parse(code)
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
+            # Handle direct assignments
             if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name):
                 func_name = node.value.func.id
                 var_name = node.targets[0].id
                 function_to_variable.setdefault(func_name, []).append(var_name)
+            # Handle dictionary and list comprehensions
+            elif isinstance(node.value, (ast.DictComp, ast.ListComp)):
+                for subnode in ast.walk(node.value):
+                    if isinstance(subnode, ast.Call) and isinstance(subnode.func, ast.Name):
+                        func_name = subnode.func.id
+                        var_name = node.targets[0].id
+                        function_to_variable.setdefault(func_name, []).append(var_name)
 
     # Wrap the provided functions to capture their return values
     def make_wrapper(func_name, func):
